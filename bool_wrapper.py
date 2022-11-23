@@ -17,7 +17,8 @@ def strip_bad_symbols(text: str) -> str:
 
 
 class BoolWrapper:
-    def __init__(self, input_string: str):
+    def __init__(self, input_string: str, language="en"):
+        self.language = language
         self.input_string = input_string
 
         self.boolean_expression = ""
@@ -50,22 +51,28 @@ class BoolWrapper:
         }
 
     def analise_input(self) -> bool:
-        self.input_string = self.input_string.replace(" or ", " | ").replace(" and ", " & ").replace(" xor ", " ^ ").replace(" not ", " / ")
+        self.input_string = ' ' + self.input_string + ' '
+        self.input_string = self.input_string.replace(" or ", " | ").replace(" and ", " & ").replace(" xor ",
+                                                                                                     " ^ ").replace(
+            " not ", " / ")
 
         # Удаляем все плохие символы и смотрим, изменилась ли строка
         self.boolean_expression = strip_bad_symbols(self.input_string.lower())
         if len(self.boolean_expression) != len(self.input_string.replace(' ', '')):
-            messagebox.showerror("Ошибка", "Некорректный ввод булевского выражения!")
+            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                 config.controls_names["error"]["error2"][self.language])
             return False
 
         # Смотрим, были ли в строке хоть какие-то операторы
         if len(self.boolean_expression) == len(re.sub(r"[^a-z]", "", self.boolean_expression)):
-            messagebox.showerror("Ошибка", "Некорректный ввод булевского выражения!")
+            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                 config.controls_names["error"]["error2"][self.language])
             return False
 
         # Смотрим, были ли в строке хоть какие-то переменные
         if len(self.boolean_expression) == len(re.sub(rf"[^{ALL_OPERATORS}]", "", self.boolean_expression)):
-            messagebox.showerror("Ошибка", "Некорректный ввод булевского выражения!")
+            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                 config.controls_names["error"]["error2"][self.language])
             return False
 
         # Проверяем порядок скобок, если они есть
@@ -75,11 +82,13 @@ class BoolWrapper:
                 stack.append(symbol)
             elif symbol == ')':
                 if len(stack) == 0:
-                    messagebox.showerror('Ошибка', 'Количество ( и ) скобок не совпадает!')
+                    messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                         config.controls_names["error"]["error3"][self.language])
                     return False
                 stack.pop()
         if len(stack) > 0:
-            messagebox.showerror('Ошибка', 'Количество ( и ) скобок не совпадает!')
+            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                 config.controls_names["error"]["error3"][self.language])
             return False
 
         # Пытаемся распарсить строку в обратную польскую запись
@@ -101,9 +110,9 @@ class BoolWrapper:
                 # Добавляем переменную из variable_name в выходную строку
                 if len(variable_name):
                     if symbol in self.operators['not'] or symbol == '(':
-                        messagebox.showerror('Ошибка', f'Ошибка при парсинге выражения!\n'
-                                                       f'Отсутствует бинарный оператор перед {symbol}!\n'
-                                                       f'[{error_output_string}].')
+                        messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                             f'{config.controls_names["error"]["error4"][self.language]} {symbol}!\n'
+                                             f'[{error_output_string}].')
                         return False
 
                     if variable_name not in self.boolean_variables:
@@ -116,15 +125,15 @@ class BoolWrapper:
                     if symbol in self.operators['xor'] or symbol in self.operators['and'] or \
                             symbol in self.operators['or'] or symbol == ')':
                         if prev_symbol != ')':
-                            messagebox.showerror('Ошибка', f'Ошибка при парсинге выражения!\n'
-                                                           f'Отсутствует переменная перед {symbol}!\n'
-                                                           f'[{error_output_string}].')
+                            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                                 f'{config.controls_names["error"]["error5"][self.language]} {symbol}!\n'
+                                                 f'[{error_output_string}].')
                             return False
                     if symbol in self.operators['not']:
                         if prev_symbol == ')':
-                            messagebox.showerror('Ошибка', f'Ошибка при парсинге выражения!\n'
-                                                           f'Отсутствует бинарный оператор перед {symbol}!\n'
-                                                           f'[{error_output_string}].')
+                            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                                 f'{config.controls_names["error"]["error4"][self.language]} {symbol}!\n'
+                                                 f'[{error_output_string}].')
                             return False
 
                 if symbol == '(':
@@ -154,17 +163,17 @@ class BoolWrapper:
 
         # Если последний символ был оператором, и после него не было никакой переменной, то выдаем ошибку
         if self.boolean_expression[-1] in self.operators['all']:
-            messagebox.showerror('Ошибка', f'Ошибка при парсинге выражения!\n'
-                                           f'Отсутствует переменная после оператора {stack[-1]}!\n'
-                                           f'[{error_output_string}].')
+            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                 f'{config.controls_names["error"]["error6"][self.language]} {stack[-1]}!\n'
+                                 f'[{error_output_string}].')
             return False
 
         # Добавляем последнюю переменную и все оставшиеся операторы
         if len(variable_name):
             if self.boolean_expression[len(self.boolean_expression) - len(variable_name) - 1] == ')':
-                messagebox.showerror('Ошибка', f'Ошибка при парсинге выражения!\n'
-                                               f'Отсутствует оператор после ) и перед переменной [{variable_name}]!\n'
-                                               f'[{error_output_string}].')
+                messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                     f'{config.controls_names["error"]["error7"][self.language]} [{variable_name}]!\n'
+                                     f'[{error_output_string}].')
                 return False
 
             if variable_name not in self.boolean_variables:
@@ -253,8 +262,9 @@ class BoolWrapper:
                 self._workbook.close()
                 self._workbook = None
         except IOError:
-            messagebox.showerror('Ошибка', f'Не удалось создать файл [{filename}].\n'
-                                           f'Вероятнее всего он уже открыт.\nЗакройте файл и повторите попытку.')
+            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                 f'{config.controls_names["error"]["error8"][self.language]} [{filename}].\n'
+                                 f'{config.controls_names["error"]["error9"][self.language]}')
             return False
         return True
 
@@ -607,7 +617,8 @@ class BoolWrapper:
             current_column = 0
             # Выводим к-карту с индексами
             worksheet.write(row, col, "K-map indexes", cell_format)
-            row_headers_length = row_headers_length if row_headers_length >= len("K-map indexes") else len("K-map indexes")
+            row_headers_length = row_headers_length if row_headers_length >= len("K-map indexes") else len(
+                "K-map indexes")
             # Устанавливаем для текущего столбца нужную ширину
             worksheet.set_column(current_column, current_column, row_headers_length + 2)
             row += 2
@@ -671,7 +682,8 @@ class BoolWrapper:
             self._workbook.close()
             self._workbook = None
         except IOError:
-            messagebox.showerror('Ошибка', f'Не удалось создать файл [{filename}].\n'
-                                           f'Вероятнее всего он уже открыт.\nЗакройте файл и повторите попытку.')
+            messagebox.showerror(config.controls_names["error"]["title"][self.language],
+                                 f'{config.controls_names["error"]["error8"][self.language]} [{filename}].\n'
+                                 f'{config.controls_names["error"]["error9"][self.language]}')
             return False
         return True

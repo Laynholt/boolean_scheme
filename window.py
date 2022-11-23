@@ -11,41 +11,59 @@ from bool_wrapper import BoolWrapper
 
 
 class App:
-    def __init__(self):
+    def __init__(self, language="en"):
+
+        if language not in config.language:
+            language = "en"
+
         self.window = tkinter.Tk()
-        self.window.title("Конструктор схем")
-        self.window.geometry("485x110")
+        self.window.title(config.controls_names["main"]["window_name"][language])
+        self.window.geometry("480x110")
         self.window.resizable(width=False, height=False)
 
-        label_boolean__expression = tkinter.Label(self.window, text="Введите выражение:")
-        label_boolean__expression.grid(column=0, row=0, columnspan=3, padx=15, pady=5)
+        self.label_boolean_expression = tkinter.Label(self.window,
+                                                      text=config.controls_names["main"]["label1"][language])
+        self.label_boolean_expression.grid(column=0, row=0, columnspan=3, padx=15, pady=5)
 
         self.entry_boolean_expression = ttk.Entry(self.window, width=60)
         self.entry_boolean_expression.grid(column=0, row=1, columnspan=3, padx=15, pady=5)
 
-        self.button_create_scheme = ttk.Button(self.window, text="Создать схему", command=self._create_scheme)
-        self.button_create_scheme.grid(column=0, row=2, padx=15, pady=5)
+        self.button_create_scheme = ttk.Button(self.window, text=config.controls_names["main"]["button1"][language],
+                                               width=15, command=self._create_scheme)
+        self.button_create_scheme.grid(column=0, row=2, padx=10, pady=5)
 
-        self.button_create_scheme = ttk.Button(self.window, text="Создать таблицу истинности",
-                                               command=self._create_excel_file)
-        self.button_create_scheme.grid(column=1, row=2, padx=15, pady=5)
+        self.button_create_table = ttk.Button(self.window, text=config.controls_names["main"]["button2"][language],
+                                              width=28, command=self._create_excel_file)
+        self.button_create_table.grid(column=1, row=2, padx=10, pady=5)
 
-        self.button_create_scheme = ttk.Button(self.window, text="Упростить выражение",
-                                               command=self._minimize_expression)
-        self.button_create_scheme.grid(column=2, row=2, padx=15, pady=5)
+        self.button_simplify = ttk.Button(self.window, text=config.controls_names["main"]["button3"][language],
+                                          width=22, command=self._minimize_expression)
+        self.button_simplify.grid(column=2, row=2, padx=10, pady=5)
 
-        menu_main = tkinter.Menu(self.window)
-        self.window.config(menu=menu_main)
+        self.menu_main = tkinter.Menu(self.window)
+        self.window.config(menu=self.menu_main)
 
-        menu_additional = tkinter.Menu(menu_main, tearoff=0)
+        self.menu_additional = tkinter.Menu(self.menu_main, tearoff=0)
         self.is_true_false_values_in_truth_table = tkinter.BooleanVar()
         self.is_true_false_values_in_truth_table.set(False)
-        menu_additional.add_checkbutton(label='Отображать значения в таблице истинности в виде True/False',
-                                        onvalue=1, offvalue=0, variable=self.is_true_false_values_in_truth_table)
+        self.menu_additional.add_checkbutton(label=config.controls_names["main"]["submenu1"][language],
+                                             onvalue=1, offvalue=0, variable=self.is_true_false_values_in_truth_table)
+        self.menu_language = tkinter.Menu(self.menu_additional, tearoff=0)
+        self.menu_additional.add_separator()
+
+        lang_keys = list(config.language.keys())
+        self.selected_language = tkinter.StringVar()
+        self.selected_language.set(language)
+        for i in range(len(config.language)):
+            self.menu_language.add_radiobutton(label=config.language[lang_keys[i]], value=lang_keys[i],
+                                               variable=self.selected_language,
+                                               command=self._change_language)
+        self.menu_additional.add_cascade(label=config.controls_names["main"]["submenu2"][language],
+                                         menu=self.menu_language)
 
         def _show_operators():
             child = tkinter.Toplevel(self.window)
-            child.title('Operators')
+            child.title(config.controls_names["operators"]["window_name"][self.selected_language.get()])
             child.geometry("280x110")
             child.resizable(width=False, height=False)
 
@@ -55,27 +73,48 @@ class App:
                                                     'or  = [|, +]')
             label_operators.grid(column=1, row=0, padx=100, pady=20)
 
-        menu_help = tkinter.Menu(menu_main, tearoff=0)
-        menu_help.add_command(label='Знаки операторов', command=_show_operators)
-        menu_main.add_cascade(label='Дополнительно', menu=menu_additional)
-        menu_main.add_cascade(label='Помощь', menu=menu_help)
+        self.menu_help = tkinter.Menu(self.menu_main, tearoff=0)
+        self.menu_help.add_command(label=config.controls_names["main"]["submenu3"][language], command=_show_operators)
+        self.menu_main.add_cascade(label=config.controls_names["main"]["menu1"][language], menu=self.menu_additional)
+        self.menu_main.add_cascade(label=config.controls_names["main"]["menu2"][language], menu=self.menu_help)
+
+    def _change_language(self):
+        language = self.selected_language.get()
+
+        self.window.title(config.controls_names["main"]["window_name"][language])
+
+        self.menu_main.entryconfig(1, label=config.controls_names["main"]["menu1"][language])
+        self.menu_main.entryconfig(2, label=config.controls_names["main"]["menu2"][language])
+
+        self.menu_additional.entryconfig(0, label=config.controls_names["main"]["submenu1"][language])
+        self.menu_additional.entryconfig(2, label=config.controls_names["main"]["submenu2"][language])
+        self.menu_help.entryconfig(0, label=config.controls_names["main"]["submenu3"][language])
+
+        self.label_boolean_expression.config(text=config.controls_names["main"]["label1"][language])
+
+        self.button_create_scheme.config(text=config.controls_names["main"]["button1"][language])
+        self.button_create_table.config(text=config.controls_names["main"]["button2"][language])
+        self.button_simplify.config(text=config.controls_names["main"]["button3"][language])
 
     def run(self):
         self.window.mainloop()
 
     def _create_scheme(self):
+        language = self.selected_language.get()
+
         if self.entry_boolean_expression.get() == "":
-            messagebox.showerror("Ошибка", "Необходимо ввести булевское выражение!")
+            messagebox.showerror(config.controls_names["error"]["title"][language],
+                                 config.controls_names["error"]["error1"][language])
             return
 
-        wrapper = BoolWrapper(self.entry_boolean_expression.get())
+        wrapper = BoolWrapper(self.entry_boolean_expression.get(), language=language)
         if wrapper.analise_input() is False:
             return
         wrapper.create_truth_table()
 
         # Создаем дочернее окно под вывод схемы
         scheme_window = tkinter.Toplevel(self.window)
-        scheme_window.title("Схема выражения")
+        scheme_window.title(config.controls_names["scheme"]["window_name"][language])
         scheme_window.geometry("800x500")
         scheme_window.minsize(width=800, height=500)
 
@@ -155,7 +194,8 @@ class App:
             try:
                 font = ImageFont.truetype(config.paths['font'], font_size + 5)
             except Exception:
-                messagebox.showerror('Ошибка', f'Не удалось открыть шрифт по пути: [{config.paths["font"]}]')
+                messagebox.showerror(config.controls_names["error"]["title"][language],
+                                     f'{config.controls_names["scheme"]["error1"][language]} [{config.paths["font"]}]')
                 font = ImageFont.load_default()
 
             def _draw_variable(var: str) -> tuple:
@@ -231,22 +271,22 @@ class App:
                         canvas.create_polygon(
                             x, y,
                             x, y - box_size / 2,
-                            x + box_size, y,
-                            x + box_size + circle_size / 2, y - circle_size / 2,
-                            x + box_size + circle_size, y,
-                            x + box_size + circle_size / 2, y + circle_size / 2,
-                            x + box_size, y,
+                               x + box_size, y,
+                               x + box_size + circle_size / 2, y - circle_size / 2,
+                               x + box_size + circle_size, y,
+                               x + box_size + circle_size / 2, y + circle_size / 2,
+                               x + box_size, y,
                             x, y + box_size / 2,
                             x, y
                         )
                         draw.polygon([
                             x, y,
                             x, y - box_size / 2,
-                            x + box_size, y,
-                            x + box_size + circle_size / 2, y - circle_size / 2,
-                            x + box_size + circle_size, y,
-                            x + box_size + circle_size / 2, y + circle_size / 2,
-                            x + box_size, y,
+                               x + box_size, y,
+                               x + box_size + circle_size / 2, y - circle_size / 2,
+                               x + box_size + circle_size, y,
+                               x + box_size + circle_size / 2, y + circle_size / 2,
+                               x + box_size, y,
                             x, y + box_size / 2,
                             x, y
                         ], fill=elements_color)
@@ -365,18 +405,18 @@ class App:
                             canvas.create_polygon(
                                 x, y,
                                 x, y - box_size / 2,
-                                x + 2 * box_size / 3, y - box_size / 2,
-                                x + box_size, y,
-                                x + 2 * box_size / 3, y + box_size / 2,
+                                   x + 2 * box_size / 3, y - box_size / 2,
+                                   x + box_size, y,
+                                   x + 2 * box_size / 3, y + box_size / 2,
                                 x, y + box_size / 2,
                                 x, y
                             )
                             draw.polygon([
                                 x, y,
                                 x, y - box_size / 2,
-                                x + 2 * box_size / 3, y - box_size / 2,
-                                x + box_size, y,
-                                x + 2 * box_size / 3, y + box_size / 2,
+                                   x + 2 * box_size / 3, y - box_size / 2,
+                                   x + box_size, y,
+                                   x + 2 * box_size / 3, y + box_size / 2,
                                 x, y + box_size / 2,
                                 x, y
                             ], fill=elements_color)
@@ -423,11 +463,14 @@ class App:
             try:
                 os.makedirs(config.paths['output'], exist_ok=True)
                 image.save(f"{config.paths['scheme']}", 'PNG')
-                messagebox.showinfo('Инфо', 'Изображение успешно сохранено!')
+                messagebox.showinfo(config.controls_names["info"]["title"][language],
+                                    config.controls_names["scheme"]["info1"][language])
             except ValueError:
-                messagebox.showerror('Ошибка', 'Не удалось сохранить изображение!')
+                messagebox.showerror(config.controls_names["error"]["title"][language],
+                                     config.controls_names["scheme"]["error2"][language])
 
-        button_image = ttk.Button(buttons_frame, text='Сохранить изображение', command=_save_canvas)
+        button_image = ttk.Button(buttons_frame, text=config.controls_names["scheme"]["button1"][language],
+                                  command=_save_canvas)
         button_image.grid(row=0, column=0, padx=10, pady=10)
 
         def _increase_size():
@@ -458,41 +501,50 @@ class App:
             draw = ImageDraw.Draw(image)
             _draw_canvas()
 
-        button_increase_size = ttk.Button(buttons_frame, text='Увеличить', command=_increase_size)
+        button_increase_size = ttk.Button(buttons_frame, text=config.controls_names["scheme"]["button2"][language],
+                                          command=_increase_size)
         button_increase_size.grid(row=0, column=1, padx=10, pady=10)
 
-        button_decrease_size = ttk.Button(buttons_frame, text='Уменьшить', command=_decrease_size)
+        button_decrease_size = ttk.Button(buttons_frame, text=config.controls_names["scheme"]["button3"][language],
+                                          command=_decrease_size)
         button_decrease_size.grid(row=0, column=2, padx=10, pady=10)
 
-        checkbutton_boxes = ttk.Checkbutton(buttons_frame, text='Отображать боксы', var=check_state_boxes,
-                                            command=_redraw_canvas)
+        checkbutton_boxes = ttk.Checkbutton(buttons_frame, text=config.controls_names["scheme"]["check1"][language],
+                                            var=check_state_boxes, command=_redraw_canvas)
         checkbutton_boxes.grid(row=0, column=3, padx=10, pady=10)
 
     def _create_excel_file(self):
+        language = self.selected_language.get()
+
         if self.entry_boolean_expression.get() == "":
-            messagebox.showerror("Ошибка", "Необходимо ввести булевское выражение!")
+            messagebox.showerror(config.controls_names["error"]["title"][language],
+                                 config.controls_names["error"]["error1"][language])
             return
 
-        wrapper = BoolWrapper(self.entry_boolean_expression.get())
+        wrapper = BoolWrapper(self.entry_boolean_expression.get(), language=language)
         if wrapper.analise_input() is False:
             return
         wrapper.create_truth_table()
         if wrapper.write_truth_table_to_excel(self.is_true_false_values_in_truth_table.get()):
-            messagebox.showinfo('Инфо', 'Таблица истинности успешно создана!')
+            messagebox.showinfo(config.controls_names["info"]["title"][language],
+                                config.controls_names["info"]["info1"][language])
 
     def _minimize_expression(self):
+        language = self.selected_language.get()
+
         if self.entry_boolean_expression.get() == "":
-            messagebox.showerror("Ошибка", "Необходимо ввести булевское выражение!")
+            messagebox.showerror(config.controls_names["error"]["title"][language],
+                                 config.controls_names["error"]["error1"][language])
             return
 
-        wrapper = BoolWrapper(self.entry_boolean_expression.get())
+        wrapper = BoolWrapper(self.entry_boolean_expression.get(), language=language)
         if wrapper.analise_input() is False:
             return
         wrapper.create_truth_table()
 
         child_window = tkinter.Toplevel(self.window)
         child_window.geometry("520x310")
-        child_window.title("Минимизация выражения")
+        child_window.title(config.controls_names["simple"]["window_name"][language])
         child_window.resizable(width=False, height=False)
 
         check_state_math = tkinter.BooleanVar()
@@ -501,22 +553,23 @@ class App:
         check_state_sop = tkinter.BooleanVar()
         check_state_sop.set(True)
 
-        checkbutton_math = ttk.Checkbutton(child_window, text="Использовать математические знаки операторов",
+        checkbutton_math = ttk.Checkbutton(child_window, text=config.controls_names["simple"]["check3"][language],
                                            var=check_state_math)
         checkbutton_math.grid(column=0, row=1, columnspan=2, padx=5, pady=5)
 
         def _set_sop():
-            form_type = "Дизъюнктивная нормальная форма" if check_state_sop.get() is True else "Конъюнктивная нормальная форма"
+            form_type = config.controls_names["simple"]["check1"][language] if check_state_sop.get() is True else \
+                config.controls_names["simple"]["check2"][language]
             label_full_expression.config(text=f'{form_type}:')
 
-        checkbutton_sop = ttk.Checkbutton(child_window, text="Дизъюнктивная нормальная форма",
+        checkbutton_sop = ttk.Checkbutton(child_window, text=config.controls_names["simple"]["check1"][language],
                                           var=check_state_sop, command=_set_sop)
         checkbutton_sop.grid(column=0, row=0, columnspan=2, padx=5, pady=5)
 
         def _minimize():
             if not wrapper.create_kmap(is_sop=check_state_sop.get(), is_math=check_state_math.get()):
-                messagebox.showerror('Ошибка', f'В данной реализации поддерживается только количество переменных '
-                                               f'[2, 3, 4]!\n\nВы ввели [{len(wrapper.boolean_variables)}].')
+                messagebox.showerror(config.controls_names["error"]["title"][language],
+                                     f'{config.controls_names["simple"]["error1"][language]} [{len(wrapper.boolean_variables)}].')
                 return
 
             entry_full_expression["state"] = "normal"
@@ -535,7 +588,8 @@ class App:
             button_copy_minimized_expression["state"] = "normal"
             button_write_to_excel["state"] = "normal"
 
-        button_create_kmap = ttk.Button(child_window, text="Минимизировать", command=_minimize)
+        button_create_kmap = ttk.Button(child_window, text=config.controls_names["simple"]["button1"][language],
+                                        command=_minimize)
         button_create_kmap.grid(column=0, row=2, columnspan=2, padx=5, pady=5)
 
         label_full_expression = tkinter.Label(child_window, text="")
@@ -546,7 +600,8 @@ class App:
         entry_full_expression.grid(column=0, row=4, columnspan=2, padx=15, pady=5)
         entry_full_expression["state"] = "readonly"
 
-        label_minimized_expression = tkinter.Label(child_window, text="Оптимальное выражение:")
+        label_minimized_expression = tkinter.Label(child_window,
+                                                   text=config.controls_names["simple"]["label1"][language])
         label_minimized_expression.grid(column=0, row=5, sticky=tkinter.W, padx=15, pady=5)
 
         entry_minimized_expression = ttk.Entry(child_window, width=80)
@@ -555,18 +610,22 @@ class App:
 
         def _copy_min_expression():
             pyperclip.copy(entry_minimized_expression.get())
-            messagebox.showinfo('Инфо', 'Оптимальное выражение было скопировано в буфер обмена!')
+            messagebox.showinfo(config.controls_names["info"]["title"][language],
+                                config.controls_names["simple"]["info1"][language])
 
         def _copy_full_expression():
             pyperclip.copy(entry_full_expression.get())
-            messagebox.showinfo('Инфо', 'Полное выражение было скопировано в буфер обмена!')
+            messagebox.showinfo(config.controls_names["info"]["title"][language],
+                                config.controls_names["simple"]["info2"][language])
 
-        button_copy_full_expression = ttk.Button(child_window, text="Копировать полное выражение",
+        button_copy_full_expression = ttk.Button(child_window,
+                                                 text=config.controls_names["simple"]["button2"][language],
                                                  command=_copy_full_expression)
         button_copy_full_expression.grid(column=0, row=7, padx=5, pady=10)
         button_copy_full_expression["state"] = "disable"
 
-        button_copy_minimized_expression = ttk.Button(child_window, text="Копировать упрощенное выражение",
+        button_copy_minimized_expression = ttk.Button(child_window,
+                                                      text=config.controls_names["simple"]["button3"][language],
                                                       command=_copy_min_expression)
         button_copy_minimized_expression.grid(column=1, row=7, padx=5, pady=10)
         button_copy_minimized_expression["state"] = "disable"
@@ -574,8 +633,10 @@ class App:
         def _write_to_excel():
             if wrapper.write_truth_table_to_excel(_dont_close=True):
                 if wrapper.write_kmap_to_excel(check_state_math.get()):
-                    messagebox.showinfo('Инфо', 'Информация успешно записана в файл!')
+                    messagebox.showinfo(config.controls_names["info"]["title"][language],
+                                        config.controls_names["simple"]["info3"][language])
 
-        button_write_to_excel = ttk.Button(child_window, text="Записать К-карту в эксель", command=_write_to_excel)
+        button_write_to_excel = ttk.Button(child_window, text=config.controls_names["simple"]["button4"][language],
+                                           command=_write_to_excel)
         button_write_to_excel.grid(column=0, row=8, columnspan=2, padx=5, pady=5)
         button_write_to_excel["state"] = "disable"
