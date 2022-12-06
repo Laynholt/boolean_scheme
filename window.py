@@ -110,7 +110,6 @@ class App:
         wrapper = BoolWrapper(self.entry_boolean_expression.get(), language=language)
         if wrapper.analise_input() is False:
             return
-        wrapper.create_truth_table()
 
         # Создаем дочернее окно под вывод схемы
         scheme_window = tkinter.Toplevel(self.window)
