@@ -16,7 +16,7 @@ Minimised boolean expression (Disjunctive normal form)
 
 ![image](https://user-images.githubusercontent.com/41357381/203604894-303e7b01-b6cb-4735-b0d1-4a064ef15195.png)
 
-![image](https://user-images.githubusercontent.com/41357381/203560139-1a5c6cfb-fe8d-4e51-a5c8-f3f052a4a55e.png)
+![image](https://user-images.githubusercontent.com/41357381/206177146-0866cb35-9548-4cb8-9860-bf5f2b9c2987.png)
 
 Scheme
 
