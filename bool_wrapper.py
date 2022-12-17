@@ -64,13 +64,13 @@ class BoolWrapper:
             return False
 
         # Смотрим, были ли в строке хоть какие-то операторы
-        if len(self.boolean_expression) == len(re.sub(r"[^a-z]", "", self.boolean_expression)):
+        if len(self.boolean_expression) == len(re.sub(r"[^a-z)(]", "", self.boolean_expression)):
             messagebox.showerror(config.controls_names["error"]["title"][self.language],
                                  config.controls_names["error"]["error2"][self.language])
             return False
 
         # Смотрим, были ли в строке хоть какие-то переменные
-        if len(self.boolean_expression) == len(re.sub(rf"[^{ALL_OPERATORS}]", "", self.boolean_expression)):
+        if len(self.boolean_expression) == len(re.sub(rf"[^{ALL_OPERATORS})(]", "", self.boolean_expression)):
             messagebox.showerror(config.controls_names["error"]["title"][self.language],
                                  config.controls_names["error"]["error2"][self.language])
             return False
@@ -605,7 +605,7 @@ class BoolWrapper:
 
                 # Данные
                 for j in range(self.rows):
-                    worksheet.write(row, col, self.kmap[i * self.cols + j])
+                    worksheet.write(row, col, self.kmap[j * self.cols + i])
                     row += 1
                 row = 1
                 col += 1
@@ -637,11 +637,11 @@ class BoolWrapper:
                 worksheet.write(row, col, column_headers[i], cell_format)
                 worksheet.set_column(current_column, current_column, len(column_headers[i]) + 2)
                 row += 1
-                gray_row = i ^ (i >> 1)
+                gray_col = i ^ (i >> 1)
 
                 # Данные
                 for j in range(self.rows):
-                    gray_col = j ^ (j >> 1)
+                    gray_row = j ^ (j >> 1)
                     worksheet.write(row, col, gray_row * self.cols + gray_col)
                     row += 1
                 row = self.rows + shift_row + 1
