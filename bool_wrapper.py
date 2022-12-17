@@ -97,6 +97,10 @@ class BoolWrapper:
     def parse_to_reverse_polish_notation(self) -> bool:
         stack = []
         variable_name = ""
+        
+        self.boolean_variables = []
+        self.converted_boolean_expression = []
+        self.number_of_variables = 0
 
         # Проходимся по всеё строке
         error_output_string = ""
@@ -191,6 +195,7 @@ class BoolWrapper:
 
     def create_truth_table(self):
         stack = []
+        self.truth_table = {}
         number_of_variables = len(self.boolean_variables)
 
         variables_truth_table_values = list(product([False, True], repeat=number_of_variables))
@@ -261,7 +266,7 @@ class BoolWrapper:
             if not _dont_close:
                 self._workbook.close()
                 self._workbook = None
-        except IOError:
+        except xlsxwriter.exceptions.FileCreateError:
             messagebox.showerror(config.controls_names["error"]["title"][self.language],
                                  f'{config.controls_names["error"]["error8"][self.language]} [{filename}].\n'
                                  f'{config.controls_names["error"]["error9"][self.language]}')
@@ -277,6 +282,9 @@ class BoolWrapper:
         self.kmap = [value] * pow(2, self.number_of_variables)
         value = 1 if is_sop else 0
         truth_table_result_values = list(self.truth_table.values())[-1]
+        
+        self.groups = []
+        
         # if number_of_variables == 2
         self.rows = 2
         self.cols = 2
@@ -342,7 +350,6 @@ class BoolWrapper:
                     _i1 = _i + directions[_next][0]
                     _j1 = _j + directions[_next][1]
 
-                    # TODO check this mean
                     if _at(_i1, _j1) is not value:
                         is_group = False
                         break
@@ -681,7 +688,7 @@ class BoolWrapper:
 
             self._workbook.close()
             self._workbook = None
-        except IOError:
+        except xlsxwriter.exceptions.FileCreateError:
             messagebox.showerror(config.controls_names["error"]["title"][self.language],
                                  f'{config.controls_names["error"]["error8"][self.language]} [{filename}].\n'
                                  f'{config.controls_names["error"]["error9"][self.language]}')
